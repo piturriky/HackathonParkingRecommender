@@ -1,23 +1,74 @@
-<div class="jumbotron">
-  <h1>'Allo, 'Allo!</h1>
-  <p class="lead">
-    <img src="images/yeoman.png" alt="I'm Yeoman"><br>
-    Always a pleasure scaffolding your apps.
-  </p>
-  <p><a class="btn btn-lg btn-success" ng-href="#/">Splendid!<span class="glyphicon glyphicon-ok"></span></a></p>
-</div>
+<div id="mainCtrl" ng-controller="main" ng-init="init()" class="cnt">
+  <div id="nav">
+    <input id="autocomplete" placeholder="Enter direction" type="text" style="width: 100%"/>
+  </div>
+<div id="map"></div>
 
-<div class="row marketing">
-  <h4>HTML5 Boilerplate</h4>
-  <p>
-    HTML5 Boilerplate is a professional front-end template for building fast, robust, and adaptable web apps or sites.
-  </p>
+<script type="text/javascript">
 
-  <h4>Angular</h4>
-  <p>
-    AngularJS is a toolset for building the framework most suited to your application development.
-  </p>
+  var map, places, infoWindow,heatmap;
+  var markers = [], heatmaps = [];
+  var autocomplete;
+  function initMap() {
+    map = new google.maps.Map(document.getElementById('map'), {
+      center: {lat: 43.4722475, lng: -3.8199358},
+      zoom: 14/*,
+      mapTypeControl: false,
+      panControl: false,
+      zoomControl: false,
+      streetViewControl: false*/
+    });
 
-  <h4>Karma</h4>
-  <p>Spectacular Test Runner for JavaScript.</p>
+    /*infoWindow = new google.maps.InfoWindow({
+      content: document.getElementById('info-content')
+    });*/
+
+    autocomplete = new google.maps.places.Autocomplete(
+      /** @type {!HTMLInputElement} */(document.getElementById('autocomplete')),
+      {types: ['address'],
+        bounds: new google.maps.LatLngBounds(
+          new google.maps.LatLng(43.4722475, -3.8199358),
+          new google.maps.LatLng(43.4722475, -3.8199358)),
+        componentRestrictions: {country: 'es'}});
+
+    places = new google.maps.places.PlacesService(map);
+
+    autocomplete.addListener('place_changed', onPlaceChanged);
+
+    function onPlaceChanged() {
+      clearMarkers();
+      var place = autocomplete.getPlace();
+      if (place.geometry) {
+        angular.element($('#mainCtrl')).scope().getZones(map,place.geometry.location);
+      } else {
+        document.getElementById('autocomplete').placeholder = 'Enter direction';
+      }
+    }
+
+    function clearMarkers() {
+      for (var i = 0; i < markers.length; i++) {
+        if (markers[i]) {
+          markers[i].setMap(null);
+        }
+      }
+      markers = [];
+      if(typeof heatmap !== "undefined") {
+        heatmap.setMap(null);
+      }
+      heatmaps = [];
+    }
+
+    function dropMarker(i) {
+      return function() {
+        markers[i].setMap(map);
+      };
+    }
+
+  }
+
+</script>
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB2s-_5soqYCO20XvbMeAFV61esrqwjbEk&signed_in=true&libraries=places,visualization&callback=initMap">
+</script>
+  <!--<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB2s-_5soqYCO20XvbMeAFV61esrqwjbEk&libraries=places"></script>-->
 </div>

@@ -6,7 +6,7 @@
 
 <script type="text/javascript">
 
-  var map, places, infoWindow,heatmap;
+  var map, places, infoWindow,heatmap,you;
   var markers = [], heatmaps = [];
   var autocomplete;
   function initMap() {
@@ -39,7 +39,7 @@
       clearMarkers();
       var place = autocomplete.getPlace();
       if (place.geometry) {
-        angular.element($('#mainCtrl')).scope().getZones(map,place.geometry.location);
+        angular.element($('#mainCtrl')).scope().getZones(place.geometry.location);
       } else {
         document.getElementById('autocomplete').placeholder = 'Enter direction';
       }
@@ -56,6 +56,11 @@
         heatmap.setMap(null);
       }
       heatmaps = [];
+
+      if(typeof you !== "undefined") {
+        you.setMap(null);
+      }
+
     }
 
     function dropMarker(i) {

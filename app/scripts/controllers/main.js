@@ -13,7 +13,7 @@ angular.module('hackathonApp')
 
     };
 
-    var map;
+    var searchArea = 0.01;
 
     function CallLod4All(location){
       var lfasparql = new LFASparql();
@@ -26,8 +26,8 @@ angular.module('hackathonApp')
         '?p ayto:longitud ?lon. ' +
         '?p dc:identifier ?id. ' +
         'FILTER regex(str(?id), "APAR.*")' +
-        'FILTER (xsd:double(?lat) >= ' + location.lat() + ' - 0.007 && xsd:double(?lat) <= ' + location.lat() + ' + 0.007). ' +
-        'FILTER (xsd:double(?lon) >= ' + location.lng() + ' - 0.007 && xsd:double(?lon) <= ' + location.lng() + ' + 0.007) ' +
+        'FILTER (xsd:double(?lat) >= ' + location.lat() + ' - ' + searchArea + ' && xsd:double(?lat) <= ' + location.lat() + ' + ' + searchArea + '). ' +
+        'FILTER (xsd:double(?lon) >= ' + location.lng() + ' - ' + searchArea + ' && xsd:double(?lon) <= ' + location.lng() + ' + ' + searchArea + ') ' +
         '}';
 
       lfasparql.executeSparql({
@@ -74,22 +74,19 @@ angular.module('hackathonApp')
     }
 
     function PrintZone(zone){
-      console.log(zone.code + ' ' + zone.lat + ' ' + zone.long +' '+ zone.info);
+      //console.log(zone.code + ' ' + zone.lat + ' ' + zone.long +' '+ zone.info);
 
       var label, title, image;
-
       switch (zone.code){
         case 1:// Parking subterrani
-              label = 'P';
               title = 'Parking';
-
               image = {
                 url: 'images/safe_image.png',
                 // This marker is 20 pixels wide by 32 pixels high.
                 size: new google.maps.Size(20, 32),
                 // The origin for this image is (0, 0).
                 origin: new google.maps.Point(0, 0),
-                // The anchor for this image is the base of the flagpole at (0, 32).
+                // The anchor for this image is the base, at (0, 32).
                 anchor: new google.maps.Point(0, 32)
               };
 
@@ -136,8 +133,10 @@ angular.module('hackathonApp')
         var items = data[i];
         var lat = parseFloat(items.lat.value);
         var lon = parseFloat(items.lon.value);
+        if(lat >= loc.lat() - searchArea && lat <= loc.lat() + searchArea && lon >= loc.lng() - searchArea && lon <= loc.lng() + searchArea){
+          heatmaps.push(new google.maps.LatLng(lat,lon));
+        }
 
-        heatmaps.push(new google.maps.LatLng(lat,lon));
       }
 
       heatmap = new google.maps.visualization.HeatmapLayer({
@@ -149,15 +148,30 @@ angular.module('hackathonApp')
       heatmap.set('maxIntensity',15);
 
     }
+    var loc;
+    $scope.getZones = function(location) {
 
-    $scope.getZones = function(map_,location) {
-      map = map_;
+      loc = location;
+
       map.panTo(location);
       map.setZoom(16);
 
-      var marker = new google.maps.Marker({
+      var image = {
+        url: 'images/obj.png',
+        // This marker is 20 pixels wide by 32 pixels high.
+        size: new google.maps.Size(30, 50),
+        // The origin for this image is (0, 0).
+        origin: new google.maps.Point(0, 0),
+        // The anchor for this image is the base, at (0, 32).
+        anchor: new google.maps.Point(0, 32)
+      };
+
+      you = new google.maps.Marker({
         position: location,
         map: map,
+        icon: image,
+        title: 'You!!',
+        animation: google.maps.Animation.DROP,
       });
 
       CallLod4All(location);
